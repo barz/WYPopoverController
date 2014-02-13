@@ -2615,7 +2615,9 @@ static CGPoint WYPointRelativeToOrientation(CGPoint origin, CGSize size, UIInter
     viewController = nil;
     inView = nil;
     [overlayView setDelegate:nil];
+    [overlayView removeFromSuperview]; // ensure it doesn't linger, since it is installed into the parent window.
     overlayView = nil;
+    [containerView removeFromSuperview]; // ensure it doesn't linger, since it is installed into the parent window.
     containerView = nil;
 }
 

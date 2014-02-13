@@ -452,7 +452,7 @@ static CGFloat edgeSizeFromCornerRadius(CGFloat cornerRadius) {
     BOOL _isAccessible;
 }
 
-@property(nonatomic, assign) id <WYPopoverOverlayViewDelegate> delegate;
+@property(nonatomic, weak) id <WYPopoverOverlayViewDelegate> delegate;
 @property(nonatomic, assign) BOOL testHits;
 @property(nonatomic, unsafe_unretained) NSArray *passthroughViews;
 

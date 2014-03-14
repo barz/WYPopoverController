@@ -2573,17 +2573,19 @@ static WYPopoverTheme *defaultTheme_ = nil;
     
     void (^afterCompletionBlock)() = ^() {
         
+        __typeof__(self) strongSelf = weakSelf;
+
 #ifdef WY_BASE_SDK_7_ENABLED
-        if ([inView.window respondsToSelector:@selector(setTintAdjustmentMode:)]) {
-            for (UIView *subview in inView.window.subviews) {
-                if (subview != backgroundView) {
-                    [subview setTintAdjustmentMode:UIViewTintAdjustmentModeAutomatic];
+        if (strongSelf) {
+            if ([strongSelf->inView.window respondsToSelector:@selector(setTintAdjustmentMode:)]) {
+                for (UIView *subview in strongSelf->inView.window.subviews) {
+                    if (subview != strongSelf->backgroundView) {
+                        [subview setTintAdjustmentMode:UIViewTintAdjustmentModeAutomatic];
+                    }
                 }
             }
         }
 #endif
-        
-        __typeof__(self) strongSelf = weakSelf;
         
         if (strongSelf)
         {
@@ -2619,11 +2621,11 @@ static WYPopoverTheme *defaultTheme_ = nil;
         if (aAnimated)
         {
             [UIView animateWithDuration:duration animations:^{
-                __typeof__(self) strongSelf = weakSelf;
+                __typeof__(self) strongSelf2 = weakSelf;
                 
-                if (strongSelf)
+                if (strongSelf2)
                 {
-                    strongSelf->overlayView.alpha = 0;
+                    strongSelf2->overlayView.alpha = 0;
                 }
             } completion:^(BOOL finished) {
                 afterCompletionBlock();
@@ -2942,7 +2944,7 @@ static WYPopoverTheme *defaultTheme_ = nil;
 }
 
 #pragma mark Inline functions
-
+/*
 static NSString* WYStringFromOrientation(NSInteger orientation) {
     NSString *result = @"Unknown";
     
@@ -2965,6 +2967,7 @@ static NSString* WYStringFromOrientation(NSInteger orientation) {
     
     return result;
 }
+*/
 
 static float WYStatusBarHeight() {
     UIInterfaceOrientation orienation = [[UIApplication sharedApplication] statusBarOrientation];

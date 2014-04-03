@@ -1555,6 +1555,7 @@ static float edgeSizeFromCornerRadius(float cornerRadius) {
     
     BOOL themeUpdatesEnabled;
     BOOL themeIsUpdating;
+    BOOL addedObserver; // Hsoi 2014-04-03 - adding guard flag
 }
 
 - (void)dismissPopoverAnimated:(BOOL)aAnimated
@@ -1944,13 +1945,17 @@ static WYPopoverTheme *defaultTheme_ = nil;
                 [strongSelf->viewController viewDidAppear:YES];
             }
             
-            if ([strongSelf->viewController respondsToSelector:@selector(preferredContentSize)])
+            if (!strongSelf->addedObserver)
             {
-                [strongSelf->viewController addObserver:self forKeyPath:NSStringFromSelector(@selector(preferredContentSize)) options:0 context:nil];
-            }
-            else
-            {
-                [strongSelf->viewController addObserver:self forKeyPath:NSStringFromSelector(@selector(contentSizeForViewInPopover)) options:0 context:nil];
+                if ([strongSelf->viewController respondsToSelector:@selector(preferredContentSize)])
+                {
+                    [strongSelf->viewController addObserver:self forKeyPath:NSStringFromSelector(@selector(preferredContentSize)) options:0 context:nil];
+                }
+                else
+                {
+                    [strongSelf->viewController addObserver:self forKeyPath:NSStringFromSelector(@selector(contentSizeForViewInPopover)) options:0 context:nil];
+                }
+                strongSelf->addedObserver = YES;
             }
             
             strongSelf->backgroundView.appearing = NO;
@@ -2616,24 +2621,27 @@ static WYPopoverTheme *defaultTheme_ = nil;
     void (^completionBlock)() = ^() {
         
         __typeof__(self) strongSelf = weakSelf;
-        [strongSelf->backgroundView removeFromSuperview];
-        
-        if (aAnimated)
+        if (strongSelf)
         {
-            [UIView animateWithDuration:duration animations:^{
-                __typeof__(self) strongSelf2 = weakSelf;
-                
-                if (strongSelf2)
-                {
-                    strongSelf2->overlayView.alpha = 0;
-                }
-            } completion:^(BOOL finished) {
+            [strongSelf->backgroundView removeFromSuperview];
+            
+            if (aAnimated)
+            {
+                [UIView animateWithDuration:duration animations:^{
+                    __typeof__(self) strongSelf2 = weakSelf;
+                    
+                    if (strongSelf2)
+                    {
+                        strongSelf2->overlayView.alpha = 0;
+                    }
+                } completion:^(BOOL finished) {
+                    afterCompletionBlock();
+                }];
+            }
+            else
+            {
                 afterCompletionBlock();
-            }];
-        }
-        else
-        {
-            afterCompletionBlock();
+            }
         }
     };
     
@@ -2664,14 +2672,19 @@ static WYPopoverTheme *defaultTheme_ = nil;
         [viewController viewWillDisappear:aAnimated];
     }
     
-    @try {
-        if ([viewController respondsToSelector:@selector(preferredContentSize)]) {
-            [viewController removeObserver:self forKeyPath:NSStringFromSelector(@selector(preferredContentSize))];
-        } else {
-            [viewController removeObserver:self forKeyPath:NSStringFromSelector(@selector(contentSizeForViewInPopover))];
+    if (self->addedObserver)
+    {
+        @try {
+            if ([viewController respondsToSelector:@selector(preferredContentSize)]) {
+                [viewController removeObserver:self forKeyPath:NSStringFromSelector(@selector(preferredContentSize))];
+            } else {
+                [viewController removeObserver:self forKeyPath:NSStringFromSelector(@selector(contentSizeForViewInPopover))];
+            }
         }
+        @catch (NSException * __unused exception) {}
+        
+        self->addedObserver = NO;
     }
-    @catch (NSException * __unused exception) {}
     
     if (aAnimated)
     {

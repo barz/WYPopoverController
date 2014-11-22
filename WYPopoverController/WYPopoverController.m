@@ -309,6 +309,8 @@ static char const * const UINavigationControllerEmbedInPopoverTagKey = "UINaviga
     }
 }
 
+// Hsoi 2014-11-22 - See: https://github.com/sammcewan/WYPopoverController/issues/22
+// https://github.com/sammcewan/WYPopoverController/issues/36
 - (void)sizzled_setPreferredContentSize:(CGSize)aSize
 {
     [self sizzled_setPreferredContentSize:aSize];
@@ -316,13 +318,14 @@ static char const * const UINavigationControllerEmbedInPopoverTagKey = "UINaviga
     if ([self isKindOfClass:[UINavigationController class]] == NO && self.navigationController != nil)
     {
 #ifdef WY_BASE_SDK_7_ENABLED
-        if ([self respondsToSelector:@selector(setPreferredContentSize:)]) {
+        if ([self.navigationController isEmbedInPopover] == NO) {
+            return;
+        } else if ([self respondsToSelector:@selector(setPreferredContentSize:)]) {
             [self.navigationController setPreferredContentSize:aSize];
         }
 #endif
     }
 }
-
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
